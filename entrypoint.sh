@@ -16,5 +16,30 @@ ln -s /opt/traccar/data/logs /opt/traccar/logs
 echo "[railway] waiting for MySQL and ensuring database 'traccar' exists ..."
 /opt/traccar/jre/bin/java -cp '/opt/traccar/lib/*:/opt/traccar' CreateDb
 
+# Run Traccar in the background, wait for the web server, then seed the default
+# admin account through Traccar's own API (only succeeds while the users table is
+# empty, i.e. on the very first boot — later boots get 401 and ignore it).
 cd /opt/traccar
-exec /opt/traccar/jre/bin/java -XX:+ExitOnOutOfMemoryError -Xmx768m -jar tracker-server.jar conf/traccar.xml
+/opt/traccar/jre/bin/java -XX:+ExitOnOutOfMemoryError -Xmx768m -jar tracker-server.jar conf/traccar.xml &
+APP_PID=$!
+
+echo "[railway] waiting for the Traccar web server ..."
+i=0
+while ! wget -q -O /dev/null http://127.0.0.1:8082/api/health 2>/dev/null; do
+  i=$((i+1))
+  if [ "$i" -ge 120 ]; then
+    echo "[railway] web server did not come up in time - giving up (Railway will restart)"
+    kill "$APP_PID" 2>/dev/null
+    exit 1
+  fi
+  sleep 5
+done
+
+echo "[railway] ensuring default admin account exists"
+wget -q -O /dev/null --header "Content-Type: application/json" \
+  --post-data '{"name":"Administrator","email":"admin","password":"admin"}' \
+  http://127.0.0.1:8082/api/users 2>/dev/null \
+  && echo "[railway] default admin seeded (admin/admin - CHANGE IT after first login)" \
+  || echo "[railway] users already exist, skipping admin seed"
+
+wait "$APP_PID"
