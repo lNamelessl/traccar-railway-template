@@ -16,10 +16,7 @@ ln -s /opt/traccar/data/logs /opt/traccar/logs
 echo "[railway] waiting for MySQL and ensuring database 'traccar' exists ..."
 /opt/traccar/jre/bin/java -cp '/opt/traccar/lib/*:/opt/traccar' CreateDb
 
-# TCP front for the device-ingest port (see HealthMux.java)
 if [ -n "${PORT:-}" ] && [ "${PORT}" != "${WEB_PORT:-8082}" ]; then
-  /opt/traccar/jre/bin/java -cp /opt/traccar HealthMux &
-  echo "[railway] HealthMux started on PORT=${PORT}"
 fi
 
 # Run Traccar in the background, wait for the web server, then seed the default
