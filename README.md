@@ -2,7 +2,7 @@
 
 One-click [Traccar](https://www.traccar.org/) (open-source GPS tracking, 150+ device protocols) for Railway: the web UI/API on your Railway domain, device ingest published through a Railway TCP proxy, and MySQL persistence — all secrets auto-generated, version pinned (`traccar/traccar:6.15.3-alpine`, MySQL 8).
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.app/new?github_url=https://github.com/lNamelessl/traccar-railway-template)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/traccar-template)
 
 ## What you get
 
