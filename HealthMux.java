@@ -40,6 +40,7 @@ public class HealthMux {
             }
             String firstLine = new String(head, 0, Math.min(headLen, 256));
             int target = firstLine.startsWith("GET /api/health") ? web : osmand;
+            System.out.println("[railway] HealthMux " + firstLine.split("\r\n")[0] + " -> " + target);
             Socket upstream = new Socket("127.0.0.1", target);
             OutputStream cout = client.getOutputStream();
             InputStream uin = upstream.getInputStream();
@@ -55,7 +56,7 @@ public class HealthMux {
             a.join(300000);
             b.join(300000);
         } catch (Exception e) {
-            // broken probes/clients are normal; be quiet
+            System.out.println("[railway] HealthMux connection error: " + e);
         } finally {
             try { client.close(); } catch (Exception ignored) { }
         }
