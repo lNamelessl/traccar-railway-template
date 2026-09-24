@@ -17,7 +17,6 @@ echo "[railway] waiting for MySQL and ensuring database 'traccar' exists ..."
 /opt/traccar/jre/bin/java -cp '/opt/traccar/lib/*:/opt/traccar' CreateDb
 
 if [ -n "${PORT:-}" ] && [ "${PORT}" != "${WEB_PORT:-8082}" ]; then
-fi
 
 # Run Traccar in the background, wait for the web server, then seed the default
 # admin account through Traccar's own API (only succeeds while the users table is
@@ -34,12 +33,9 @@ while ! wget -q -O /dev/null http://127.0.0.1:8082/api/health 2>/dev/null; do
     echo "[railway] web server did not come up in time - giving up (Railway will restart)"
     kill "$APP_PID" 2>/dev/null
     exit 1
-  fi
   sleep 5
 done
 
-echo "[railway] listening ports:"; netstat -tln 2>/dev/null | grep -E ":(5055|5056|8082)" || echo "no 5055/5056/8082 listener"; netstat -tln 2>/dev/null | wc -l
-echo "[railway] traccar.log tail:"; tail -n 15 /opt/traccar/logs/traccar.log 2>/dev/null || true
 echo "[railway] ensuring default admin account exists"
 wget -q -O /dev/null --header "Content-Type: application/json" \
   --post-data '{"name":"Administrator","email":"admin","password":"admin"}' \
