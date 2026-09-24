@@ -41,7 +41,7 @@ while ! wget -q -O /dev/null http://127.0.0.1:8082/api/health 2>/dev/null; do
   sleep 5
 done
 
-echo "[railway] listening ports:"; netstat -tln 2>/dev/null | sed -n "1,12p"
+echo "[railway] listening ports:"; netstat -tln 2>/dev/null | grep -E ":(5055|5056|8082)" || echo "no 5055/5056/8082 listener"; netstat -tln 2>/dev/null | wc -l
 echo "[railway] traccar.log tail:"; tail -n 15 /opt/traccar/logs/traccar.log 2>/dev/null || true
 echo "[railway] ensuring default admin account exists"
 wget -q -O /dev/null --header "Content-Type: application/json" \
