@@ -14,8 +14,14 @@ DB_PASS="${DATABASE_PASSWORD:-}"
 
 echo "[railway] waiting for MySQL at ${DB_HOST}:3306 ..."
 i=0
-while ! mysql -h "$DB_HOST" -P 3306 -u"$DB_USER" -p"$DB_PASS" -e "SELECT 1;" >/dev/null 2>&1; do
+while true; do
+  if PROBE_ERR=$(mysql -h "$DB_HOST" -P 3306 -u"$DB_USER" -p"$DB_PASS" -e "SELECT 1;" 2>&1); then
+    break
+  fi
   i=$((i+1))
+  if [ "$i" -le 2 ] || [ $((i % 6)) -eq 0 ]; then
+    echo "[railway] probe #$i failed: $PROBE_ERR" | head -3
+  fi
   if [ "$i" -ge 60 ]; then
     echo "[railway] MySQL not reachable after 5 minutes - giving up (Railway will restart)"
     exit 1
