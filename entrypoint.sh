@@ -4,7 +4,8 @@
 #    compiled against the image's own JDBC driver — replaces the MYSQL_DATABASE
 #    plugin var so the template needs zero deploy-form prompts)
 # 2. symlinks /opt/traccar/logs into the single persistent volume
-# 3. execs Traccar exactly like the upstream image entrypoint
+# 3. seeds the default admin account through Traccar's own API on the first boot
+# 4. runs Traccar in the foreground (same JVM flags as the upstream image entrypoint)
 
 set -e
 
@@ -16,10 +17,6 @@ ln -s /opt/traccar/data/logs /opt/traccar/logs
 echo "[railway] waiting for MySQL and ensuring database 'traccar' exists ..."
 /opt/traccar/jre/bin/java -cp '/opt/traccar/lib/*:/opt/traccar' CreateDb
 
-
-# Run Traccar in the background, wait for the web server, then seed the default
-# admin account through Traccar's own API (only succeeds while the users table is
-# empty, i.e. on the very first boot — later boots get 401 and ignore it).
 cd /opt/traccar
 /opt/traccar/jre/bin/java -XX:+ExitOnOutOfMemoryError -Xmx768m -jar tracker-server.jar conf/traccar.xml &
 APP_PID=$!
@@ -32,6 +29,7 @@ while ! wget -q -O /dev/null http://127.0.0.1:8082/api/health 2>/dev/null; do
     echo "[railway] web server did not come up in time - giving up (Railway will restart)"
     kill "$APP_PID" 2>/dev/null
     exit 1
+  fi
   sleep 5
 done
 
