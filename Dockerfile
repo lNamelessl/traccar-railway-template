@@ -19,7 +19,8 @@ ENV CONFIG_USE_ENVIRONMENT_VARIABLES=true \
     DATABASE_DRIVER=com.mysql.cj.jdbc.Driver \
     DATABASE_USER=root \
     WEB_PORT=8082 \
-    OSMAND_PORT=5055
+    OSMAND_PORT=5055 \
+    PORT=8082
 
 # CreateDb (compiled from the image's own JDBC driver) waits for MySQL and
 # creates the traccar database before the app starts.
