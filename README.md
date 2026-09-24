@@ -18,13 +18,14 @@ Everything is pre-wired: the Traccar service runs in env-var mode (`CONFIG_USE_E
 1. **Log in at your Railway domain** (web UI on port 8082): user `admin`, password `admin`.
 2. **Change the admin password immediately** (menu → Account → edit password). Everyone who has ever read the Traccar docs knows the default. The UI will also nag you to change it.
 3. **Add a device**: in the UI, Devices → Add → give it a name and a unique ID (e.g. `123456`). The unique ID must match what your device/app reports.
-4. **Point devices at the ingest endpoint**:
-   - **TCP (native protocol flow)**: open the `traccar` service → Variables tab → copy `RAILWAY_TCP_PROXY_DOMAIN` and `RAILWAY_TCP_PROXY_PORT`. That `host:port` pair is your device server address (OsmAnd protocol, TCP). It is stable for the life of the service.
-   - **HTTP (easiest test, works anywhere HTTPS works)**: the OsmAnd protocol also accepts plain HTTP GET on the web port — no TCP config needed:
+4. **Point devices at the ingest endpoint** — Railway exposes one public TCP proxy per service, and this template fronts it on the Traccar web port, which speaks the OsmAnd HTTP device protocol natively:
+   - open the `traccar` service → Variables tab → copy `RAILWAY_TCP_PROXY_DOMAIN` and `RAILWAY_TCP_PROXY_PORT`
+   - your device/app URL is then `http://RAILWAY_TCP_PROXY_DOMAIN:RAILWAY_TCP_PROXY_PORT/client-proxy/` (stable for the life of the service)
+   - **zero-credential test from any browser or curl** (no TCP setup needed):
      ```
-     https://<your-domain>/?id=123456&lat=48.137&lon=11.575
+     https://<your-domain>/client-proxy/?id=123456&lat=48.137&lon=11.575
      ```
-5. Watch the device move: the phone app [OsmAnd](https://www.osmand.net/) has a built-in Traccar/OsmAnd tracking plugin (set the server to your domain or `RAILWAY_TCP_PROXY_DOMAIN:PORT`, device ID matching step 3).
+5. Watch the device move: the phone app [OsmAnd](https://www.osmand.net/) has a built-in online-tracking plugin — set the web address to the `/client-proxy/` URL from step 4 (OsmAnd app) or the Traccar Client app's server URL, device ID matching step 3.
 
 ## Variables (reference — all pre-configured)
 
