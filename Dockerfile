@@ -2,8 +2,8 @@ FROM traccar/traccar:6.15.3-alpine AS traccar
 
 FROM eclipse-temurin:21-alpine AS builder
 COPY --from=traccar /opt/traccar/lib /libs
-COPY CreateDb.java /src/CreateDb.java
-RUN cd /src && javac -cp "/libs/*" CreateDb.java
+COPY CreateDb.java HealthMux.java /src/
+RUN cd /src && javac -cp "/libs/*" CreateDb.java HealthMux.java
 
 FROM traccar
 
@@ -19,11 +19,14 @@ ENV CONFIG_USE_ENVIRONMENT_VARIABLES=true \
     DATABASE_DRIVER=com.mysql.cj.jdbc.Driver \
     DATABASE_USER=root \
     WEB_PORT=8082 \
-    OSMAND_PORT=5055
+    OSMAND_PORT=5056
 
 # CreateDb (compiled from the image's own JDBC driver) waits for MySQL and
-# creates the traccar database before the app starts.
+# creates the traccar database before the app starts. HealthMux fronts the
+# device-ingest port: Railway's healthcheck probes /api/health there, which is
+# forwarded to the web server, while device traffic goes to the OsmAnd listener.
 COPY --from=builder /src/CreateDb.class /opt/traccar/CreateDb.class
+COPY --from=builder /src/HealthMux.class /opt/traccar/HealthMux.class
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
