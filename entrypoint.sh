@@ -14,7 +14,7 @@ rm -rf /opt/traccar/logs
 ln -s /opt/traccar/data/logs /opt/traccar/logs
 
 echo "[railway] waiting for MySQL and ensuring database 'traccar' exists ..."
-java -cp '/opt/traccar/lib/*:/opt/traccar' CreateDb
+/opt/traccar/jre/bin/java -cp '/opt/traccar/lib/*:/opt/traccar' CreateDb
 
 cd /opt/traccar
 exec /opt/traccar/jre/bin/java -XX:+ExitOnOutOfMemoryError -Xmx768m -jar tracker-server.jar conf/traccar.xml
