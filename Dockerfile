@@ -1,4 +1,11 @@
-FROM traccar/traccar:6.15.3-alpine
+FROM traccar/traccar:6.15.3-alpine AS traccar
+
+FROM eclipse-temurin:21-alpine AS builder
+COPY --from=traccar /opt/traccar/lib /libs
+COPY CreateDb.java /src/CreateDb.java
+RUN cd /src && javac -cp "/libs/*" CreateDb.java
+
+FROM traccar
 
 # Static configuration is baked into the image so the template deploys with ZERO
 # deploy-form inputs. Dynamic values (DATABASE_URL, DATABASE_PASSWORD, DB_HOST)
@@ -14,8 +21,9 @@ ENV CONFIG_USE_ENVIRONMENT_VARIABLES=true \
     WEB_PORT=8082 \
     OSMAND_PORT=5055
 
-# mysql client is used by the entrypoint to wait for MySQL and create the database
-RUN apk add --no-cache mysql-client
+# CreateDb (compiled from the image's own JDBC driver) waits for MySQL and
+# creates the traccar database before the app starts.
+COPY --from=builder /src/CreateDb.class /opt/traccar/CreateDb.class
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
