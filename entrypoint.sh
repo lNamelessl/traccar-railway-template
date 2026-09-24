@@ -15,7 +15,7 @@ DB_PASS="${DATABASE_PASSWORD:-}"
 echo "[railway] waiting for MySQL at ${DB_HOST}:3306 ..."
 i=0
 while true; do
-  if PROBE_ERR=$(mysql -h "$DB_HOST" -P 3306 -u"$DB_USER" -p"$DB_PASS" -e "SELECT 1;" 2>&1); then
+  if PROBE_ERR=$(mysql --skip-ssl -h "$DB_HOST" -P 3306 -u"$DB_USER" -p"$DB_PASS" -e "SELECT 1;" 2>&1); then
     break
   fi
   i=$((i+1))
@@ -31,7 +31,7 @@ done
 echo "[railway] MySQL is up (waited $((i*5))s)"
 
 echo "[railway] ensuring database 'traccar' exists"
-mysql -h "$DB_HOST" -P 3306 -u"$DB_USER" -p"$DB_PASS" \
+mysql --skip-ssl -h "$DB_HOST" -P 3306 -u"$DB_USER" -p"$DB_PASS" \
   -e "CREATE DATABASE IF NOT EXISTS traccar CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
 echo "[railway] pointing /opt/traccar/logs into the persistent volume"
