@@ -41,11 +41,13 @@ public class HealthMux {
             String firstLine = new String(head, 0, Math.min(headLen, 256));
             int target = firstLine.startsWith("GET /api/health") ? web : osmand;
             Socket upstream = new Socket("127.0.0.1", target);
-            OutputStream out = upstream.getOutputStream();
-            out.write(head, 0, headLen);
-            out.flush();
-            Thread a = new Thread(() -> pipe(in, upstreamOut(upstream)));
-            Thread b = new Thread(() -> pipe(upstreamIn(upstream), client.getOutputStream()));
+            OutputStream cout = client.getOutputStream();
+            InputStream uin = upstream.getInputStream();
+            OutputStream uout = upstream.getOutputStream();
+            Thread a = new Thread(() -> pipe(in, uout));
+            Thread b = new Thread(() -> pipe(uin, cout));
+            uout.write(head, 0, headLen);
+            uout.flush();
             a.setDaemon(true);
             b.setDaemon(true);
             a.start();
@@ -57,14 +59,6 @@ public class HealthMux {
         } finally {
             try { client.close(); } catch (Exception ignored) { }
         }
-    }
-
-    static OutputStream upstreamOut(Socket s) {
-        try { return s.getOutputStream(); } catch (Exception e) { throw new RuntimeException(e); }
-    }
-
-    static InputStream upstreamIn(Socket s) {
-        try { return s.getInputStream(); } catch (Exception e) { throw new RuntimeException(e); }
     }
 
     static void pipe(InputStream in, OutputStream out) {
