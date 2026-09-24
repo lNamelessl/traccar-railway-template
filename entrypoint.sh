@@ -16,7 +16,6 @@ ln -s /opt/traccar/data/logs /opt/traccar/logs
 echo "[railway] waiting for MySQL and ensuring database 'traccar' exists ..."
 /opt/traccar/jre/bin/java -cp '/opt/traccar/lib/*:/opt/traccar' CreateDb
 
-if [ -n "${PORT:-}" ] && [ "${PORT}" != "${WEB_PORT:-8082}" ]; then
 
 # Run Traccar in the background, wait for the web server, then seed the default
 # admin account through Traccar's own API (only succeeds while the users table is
